@@ -1,0 +1,146 @@
+NAME
+
+    Dist::Zilla::PluginBundle::MyCompany::ATS - mints and builds a
+    Dist::Zilla based project with ATS team defaults
+
+USAGE
+
+        # Install
+        cpanm Dist::Zilla::PluginBundle::MyCompany::ATS
+    
+        # first time only, setup dzil
+        dzil setup
+    
+        # Start a new DZ based project
+        dzil new -P MyCompany::ATS Foo::Bar
+    
+        # Install the dependencies
+        dzil authordeps --missing | cpanm
+        dzil listdeps --missing | cpanm
+    
+        dzil test
+    
+        # To release a new version:
+    
+        # manually update version number in Foo::Bar
+        # (other # VERSION tags automatically updated)
+    
+        # then:
+        dzil build
+        dzil test
+        dzil clean
+    
+        git add META.json lib/Foo/Bar.pm
+        git commit -m 'new version number'
+        git push
+
+SYNOPSIS
+
+        # in dist.ini:
+        name = Bean-ATS
+        author = MyCompany Technology <apisupport@broadbean.com>
+        license = None
+        copyright_holder = MyCompany Technology
+        [@MyCompany::ATS]
+
+DESCRIPTION
+
+    Dist::Zilla bundle for ATS Integration projects. Based on Dist::Milla
+    but with various Github/CPAN aspects removed (and hopefully without
+    Milla's dependency on perl 5.12)
+
+    This also makes your distribution installable from the git repo, which
+    is handy for deploying patched versions of modules, e.g. via
+
+        cpanm git://github.com/me/my-lovely-distribution@my-patched-branch
+
+ MINTING FEATURES
+
+    The Minting Profile needs work, but currently does the following:
+
+    Creates dist.ini
+
+    Adds .gitignore
+
+    Creates initial empty module
+
+    Creates lib, t, xt, bin, directories
+
+ BUILDING FEATURES
+
+    Takes pre-requisites from cpanfile
+
+    Deployable from repo (makefile and META copied to repo root after
+    build)
+
+    Automatically updated # VERSION tags
+
+    Allows share directories
+
+BEHAVIOUR
+
+    In your dist.ini
+
+        [@MyCompany::ATS]
+
+    Is the equivalent to:
+
+        ['NameFromDirectory'],
+        [ 'Git::GatherDir',
+             { exclude_filename => [ 'Build.PL', 'META.json', 'README.md', 'LICENSE' ] }
+        ],
+        [ 'CopyFilesFromBuild',
+             { copy => [ 'META.json', 'LICENSE', 'Build.PL' ] }
+        ],
+        ['VersionFromModule'],
+        [ 'Git::Check', { allow_dirty => [ 'dist.ini', 'Changes', 'META.json', 'README.md' ] } ],
+        [ 'MetaNoIndex', { directory => [qw( t xt inc share eg examples )] } ],
+        ['Prereqs::FromCPANfile'],
+        ['ModuleBuildTiny'],
+        ['MetaJSON'],
+        [ 'Prereqs',
+             {   -phase => 'develop',
+                 'Dist::Zilla::PluginBundle::MyCompany::ATS' =>
+                  Dist::Zilla::PluginBundle::MyCompany::ATS->VERSION
+             }
+        ],
+        ['PodSyntaxTests'],
+        ['MetaYAML'],
+        ['License'],
+        ['RunExtraTests'],
+        [ 'ExecDir',  { dir => 'script' } ],
+        [ 'ShareDir', { dir => 'share' } ],
+        ['Manifest'],
+        ['ManifestSkip'],
+        [ PruneFiles => { filename => 'dist.ini' } ],
+        ['FakeRelease'],
+        ['OurPkgVersion'],
+        ['Test::ChangesHasContent'],
+
+ARGUMENTS
+
+ installer
+
+    Default is ModuleBuildTiny, also supports the dzil plugins for
+    MakeMaker, MakeMaker::IncShareDir, ModuleBuild.
+
+CUSTOMISING
+
+    Note that Dist::Zilla::PluginBundle::MyCompany::ATS uses both the
+    Dist::Zilla::Role::PluginBundle::Config::Slicer and
+    Dist::Zilla::Role::PluginBundle::PluginRemover roles, so can be easily
+    customised.
+
+BUILDING THIS PACKAGE
+
+        # Install the dependencies
+        dzil authordeps --missing | cpanm
+        dzil listdeps --missing | cpanm
+    
+        # Build and run the test suite
+        dzil test
+    
+        # Manually update the version number in main module (and commit)
+        # then:
+        dzil release
+
