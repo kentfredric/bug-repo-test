@@ -3,7 +3,7 @@ use Test::DZil;
 use Path::Class;
 
 use Test::File::ShareDir -share =>
-    { -dist => { 'Dist-Zilla-PluginBundle-MyCompany-ATS' => 'share' }, };
+  { -dist => { 'Dist-Zilla-PluginBundle-MyCompany-ATS' => 'share' }, };
 
 my $tzil = Minter->_new_from_profile(
     [ 'MyCompany::ATS'   => 'default' ],
@@ -12,19 +12,20 @@ my $tzil = Minter->_new_from_profile(
 );
 
 $tzil->mint_dist;
-
-my $mint_root = $tzil->tempdir->subdir('mint');
-foreach my $file (qw(.gitignore dist.ini)) {
-    ok( -e $mint_root->file($file)->absolute, "Created file $file" )
-        or diag( $mint_root->file($file) . " does not exist" );
+my $found_files;
+for my $child ( $tzil->tempdir->subdir('mint')->children ) {
+    diag $child;
+    $found_files++ if !-d $child;
+}
+ok( $found_files, "Found at least one file in the mint" );
+diag "Library paths: ";
+for my $libpath (@INC) {
+    diag $libpath;
 }
 
-foreach my $dir (qw(t bin xt lib)) {
-    ok( -d $mint_root->subdir($dir)->absolute, "Created dir $dir" )
-        or diag( $mint_root->subdir($dir) . " does not exist" );
-}
+my $distdir =  dir(File::ShareDir::dist_dir( $Dist::Zilla::MintingProfile::MyCompany::ATS::DIST)  )->absolute;
 
-my $distini = $tzil->slurp_file('mint/dist.ini');
-like( $distini, qr/\@MyCompany::ATS/, "Using the MyCompany::ATS plugin bundle" );
+diag "Dist-Dir:", $distdir;
 
+system('find', $distdir );
 done_testing;
